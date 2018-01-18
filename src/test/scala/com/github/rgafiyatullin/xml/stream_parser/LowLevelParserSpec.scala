@@ -140,6 +140,13 @@ class LowLevelParserSpec extends FlatSpec with Matchers {
     ))
   }
 
+  it should "parse #17 (xml-entities in attribute value)" in {
+    common("<text key='value&amp;value'", Seq(
+      LowLevelEvent.OpenElementStart(ep, "", "text"),
+      LowLevelEvent.UnprefixedAttribute(ep, "key", "value&value")
+    ))
+  }
+
   it should "continue properly" in {
     val inputPt1 = "<a>asdfghjkl"
     val inputPt2 = "zxcvbnm</a>"
@@ -188,8 +195,8 @@ class LowLevelParserSpec extends FlatSpec with Matchers {
 
   private def ensureParserInputUnderrun(p: LowLevelParser): LowLevelParser = {
     try {
-      p.out
-      throw new Exception("Expected input underrun to be thrown")
+      val (e, _) = p.out
+      throw new Exception("Expected input underrun to be thrown [fetched instead: %s]".format(e))
     } catch {
         case pe @ LowLevelParserError.TokError(
               parser,

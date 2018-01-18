@@ -270,7 +270,7 @@ object State {
   final case class InsideAttributeValue(acc: Queue[Char]) extends State {
     override def processChar(position: Position): ProcessChar = {
       case '"' =>
-        (Seq(Token.AttributeValue(position, acc.mkString)), InsideTag(Queue.empty))
+        (Seq(Token.AttributeValue(position, unescapeXmlEntities(acc.mkString, position))), InsideTag(Queue.empty))
 
       case ch =>
         (Seq(), copy(acc = acc.enqueue(ch)))
@@ -280,12 +280,25 @@ object State {
   final case class InsideAttributeValueSingleQuoted(acc: Queue[Char]) extends State {
     override def processChar(position: Position): ProcessChar = {
       case '\'' =>
-        (Seq(Token.AttributeValue(position, acc.mkString)), InsideTag(Queue.empty))
+        (Seq(Token.AttributeValue(position, unescapeXmlEntities(acc.mkString, position))), InsideTag(Queue.empty))
 
       case ch =>
         (Seq(), copy(acc = acc.enqueue(ch)))
     }
   }
+
+  private def unescapeXmlEntities(input: String, position: Position): String =
+    input.toCharArray.toList.foldLeft(State.Normal: State, Queue.empty[Char]) {
+      case ((state, acc), char) =>
+        val (events, stateNext) = state.processChar(position)(char)
+        val accNext = events.foldLeft(acc) {
+          case (accInner, Token.Character(_, charInner)) =>
+            accInner.enqueue(charInner)
+          case (accInner, _) =>
+            accInner
+        }
+        (stateNext, accNext)
+    }._2.mkString
 
 }
 

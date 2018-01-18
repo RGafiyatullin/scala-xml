@@ -1,6 +1,6 @@
 name := "xml"
 
-version := "0.2.0.2"
+version := "0.2.0.3"
 organization := "com.github.rgafiyatullin"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")

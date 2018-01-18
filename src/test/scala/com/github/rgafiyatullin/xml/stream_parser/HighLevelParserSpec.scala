@@ -178,6 +178,14 @@ class HighLevelParserSpec extends FlatSpec with Matchers {
   }
 
 
+  it should "parse #13 (xml-entities in attr values)" in {
+    common("<text xmlns='namespace' key='value&amp;value' />", Seq(
+      HighLevelEvent.ElementSelfClosing(ep, "", "text", "namespace", Seq(
+        Attribute.NsImport("", "namespace"),
+        Attribute.Unprefixed("key", "value&value")))
+    ))
+  }
+
   private def common(input: String, expectedEvents: Seq[HighLevelEvent], p0: HighLevelParser = HighLevelParser.empty.withoutPosition): Unit = {
     val p1 = p0.in(input)
     val p2 = checkExpectedEvents(p1)(expectedEvents)
