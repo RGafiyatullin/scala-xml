@@ -1,18 +1,15 @@
 pipeline {
   agent {
     docker {
-      image '1science/sbt'
+      image 'sbt:dev'
     }
     
   }
   stages {
-    stage('error') {
+    stage('sbt test') {
       steps {
         sh 'sbt test'
       }
     }
-  }
-  environment {
-    DOCKER_HOST = 'tcp://docker-proxy:2375'
   }
 }
