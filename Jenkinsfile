@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'sbt:dev'
+      image 'registry.wdo.io/r_hafiyatulin/sbt-wg-artifactory:dev'
     }
     
   }
