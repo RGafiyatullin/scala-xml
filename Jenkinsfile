@@ -6,10 +6,13 @@ pipeline {
     
   }
   stages {
-    stage('') {
+    stage('error') {
       steps {
         sh 'sbt test'
       }
     }
+  }
+  environment {
+    DOCKER_HOST = 'tcp://docker-proxy:2375'
   }
 }
