@@ -8,8 +8,7 @@ pipeline {
   stages {
     stage('error') {
       steps {
-        sh 'env'
-        sh 'docker ps -a'
+        sh 'sbt test'
       }
     }
   }
