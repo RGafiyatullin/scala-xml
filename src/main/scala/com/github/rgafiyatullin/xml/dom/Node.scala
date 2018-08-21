@@ -95,25 +95,30 @@ final case class Element(override val qName: QName, override val attributes: Seq
     copy(attributes = attrs)
 
   override def render(eq0: Queue[HighLevelEvent], nsCtx0: NsImportCtx): Queue[HighLevelEvent] = {
+    // put into the ns-context all the explicitly imported namespaces
     val nsCtx1 = attributes.foldLeft(nsCtx0.push){
       case (ctx, Attribute.NsImport(addPrefix, addNamespace)) =>
         ctx.add(emptyPosition, addPrefix, addNamespace)
 
       case (ctx, _) => ctx
     }
-    val (prefix, attributesToRender) = nsCtx1.chosePrefix(ns) match {
-      case Some(prefixChosen) => (prefixChosen, attributes)
-      case None =>
-        val attributesFiltered = attributes.filter {
-          case Attribute.NsImport("", _) =>
-            false
 
-          case _ =>
-            true
-        }
-        val attributesWithNewImport = attributesFiltered ++ Seq(Attribute.NsImport("", ns))
-        ("", attributesWithNewImport)
-    }
+    // ensure ns-context can choose a prefix for the current node's namespace
+    val (prefix, attributesToRender, nsCtx2) =
+      nsCtx1.chosePrefix(ns) match {
+        case Some(prefixChosen) =>
+          (prefixChosen, attributes, nsCtx1)
+
+        case None =>
+          val attributesWithImport =
+            attributes.filter {
+              case Attribute.NsImport("", _) => false
+              case _ => true
+            } :+ Attribute.NsImport("", ns)
+
+          ("", attributesWithImport, nsCtx1.rm("").add(emptyPosition, "", ns))
+      }
+
     if (children.isEmpty) {
       eq0.enqueue(
         HighLevelEvent.ElementSelfClosing(
@@ -125,7 +130,7 @@ final case class Element(override val qName: QName, override val attributes: Seq
           emptyPosition, prefix, localName, ns, attributesToRender))
       val eq2 = children.foldLeft(eq1) {
         case (eq, child) =>
-          child.render(eq, nsCtx1)
+          child.render(eq, nsCtx2)
       }
       eq2.enqueue(
         HighLevelEvent.ElementClose(

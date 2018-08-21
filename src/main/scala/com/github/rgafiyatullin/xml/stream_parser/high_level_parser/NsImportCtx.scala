@@ -37,6 +37,8 @@ final case class NsImportCtx(parent: Option[NsImportCtx], imports: Map[String, S
     }
 
 
+  def rm(prefix: String): NsImportCtx =
+    copy(imports = imports.filter(_._1 != prefix))
 
   def add(position: Position, prefix: String, namespace: String): NsImportCtx =
     imports.get(prefix) match {

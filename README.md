@@ -28,7 +28,7 @@ val message =
 
 message.rendered.toString 
 // <message type='chat' from='romeo@montague.lit' to='juliet@capulet.lit' xmlns='jabber:client'> 
-//   <body xmlns='jabber:client'> 
+//   <body> 
 //     <![CDATA[Helloes!]]>
 //   </body>
 // </message>
